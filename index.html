@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Divisor de O.S. – Noturno</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c1219;--panel:#141d27;--panel2:#1a2633;--line:#243344;--tx:#e8eef5;--mut:#8a9bb0;
+  --led:#ffb520;--ledglow:rgba(255,181,32,.45);--teal:#2fd0b5;--alert:#ff5a4d;--alertbg:rgba(255,90,77,.1);
+  --r:14px;--f:"Manrope","Segoe UI",system-ui,sans-serif
+}
+@media (prefers-color-scheme:light){:root{
+  --bg:#eef2f6;--panel:#fff;--panel2:#f3f6f9;--line:#dce3ec;--tx:#14202c;--mut:#5d6f84;
+  --led:#c77b00;--ledglow:rgba(199,123,0,.25);--teal:#0d9a84;--alert:#d93a2e;--alertbg:rgba(217,58,46,.07)}}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--f);background:var(--bg);color:var(--tx);line-height:1.5;
+  background-image:radial-gradient(circle at 20% -10%,rgba(47,208,181,.08),transparent 40%)}
+:focus-visible{outline:2px solid var(--led);outline-offset:2px}
+
+/* topo: letreiro de destino do ônibus */
+.top{display:flex;align-items:center;gap:20px;padding:18px 28px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.sign{background:#05080b;border:2px solid #2a3542;border-radius:8px;padding:8px 18px;color:var(--led);
+  font-weight:800;font-size:22px;letter-spacing:.14em;text-shadow:0 0 10px var(--ledglow);
+  background-image:radial-gradient(rgba(255,181,32,.12) 1px,transparent 1.4px);background-size:5px 5px}
+.top h1{margin:0;font-size:18px;font-weight:700}.top p{margin:0;color:var(--mut);font-size:13px}
+.top .sp{flex:1}.date{font-weight:700;color:var(--mut);font-size:14px}
+
+.wrap{display:grid;grid-template-columns:340px 1fr;gap:22px;max-width:1400px;margin:0 auto;padding:24px 28px}
+@media(max-width:900px){.wrap{grid-template-columns:1fr;padding:16px}}
+.side{display:flex;flex-direction:column;gap:16px;align-self:start;position:sticky;top:16px}
+@media(max-width:900px){.side{position:static}}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.box h2{margin:0 0 12px;font-size:15px;display:flex;align-items:center;gap:10px}
+.n{width:24px;height:24px;border-radius:50%;background:var(--led);color:#1a1200;font-size:12px;font-weight:800;display:grid;place-items:center}
+label{display:block;font-size:12px;color:var(--mut);margin-bottom:5px;font-weight:600}
+textarea,input[type=text],select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel2);color:var(--tx);font:inherit;font-size:14px}
+textarea{height:120px;resize:vertical}
+.hint{font-size:12px;color:var(--mut);margin:8px 0 0}
+
+.drop{border:2px dashed var(--line);border-radius:12px;padding:22px 12px;text-align:center;cursor:pointer;
+  transition:.15s;background:var(--panel2)}
+.drop:hover,.drop.on{border-color:var(--led);background:var(--alertbg)}
+.drop b{display:block;font-size:14px}.drop span{font-size:12px;color:var(--mut)}
+.drop.ok{border-style:solid;border-color:var(--teal)}
+input[type=file]{display:none}
+
+.btn{background:var(--led);color:#1a1200;border:0;border-radius:10px;padding:12px 18px;font:inherit;font-weight:800;
+  cursor:pointer;width:100%;font-size:14px;transition:transform .1s,box-shadow .15s}
+.btn:hover{box-shadow:0 0 18px var(--ledglow)}.btn:active{transform:scale(.98)}
+.btn.ghost{background:transparent;color:var(--tx);border:1px solid var(--line);width:auto;padding:8px 14px;font-weight:700;font-size:13px}
+.btn.ghost:hover{border-color:var(--led);box-shadow:none}
+.err{color:var(--alert);font-size:13px;font-weight:600;margin-top:10px;min-height:1px}
+
+/* vazio */
+.empty{border:1px dashed var(--line);border-radius:var(--r);padding:70px 24px;text-align:center;color:var(--mut)}
+.empty .bus{font-size:44px;filter:grayscale(.3)}.empty h3{color:var(--tx);margin:8px 0 4px}
+
+/* resumo */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.stat b{display:block;font-size:34px;line-height:1.1;font-weight:800}
+.stat span{font-size:12px;color:var(--mut)}
+.stat.led b{color:var(--led);text-shadow:0 0 14px var(--ledglow)}
+.stat.al b{color:var(--alert)}
+
+/* revisão */
+.rev h2{font-size:17px;margin:0 0 4px}.rev>p{margin:0 0 14px;color:var(--mut);font-size:13px}
+.rep{background:var(--alertbg);border:1px solid var(--alert);border-left-width:5px;border-radius:12px;padding:14px;margin-bottom:12px}
+.rep.miss{box-shadow:0 0 0 2px var(--alert)}
+.rep .h{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}
+.rep .car{font-size:20px;font-weight:800}.rep .m{font-size:12px;color:var(--mut)}
+.rep .d{font-size:13px;margin:4px 0 10px}
+.rep .g{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:700px){.rep .g{grid-template-columns:1fr}}
+.clean{padding:18px;border-radius:12px;background:var(--panel);border:1px solid var(--teal);color:var(--teal);font-weight:700;margin-bottom:12px}
+
+/* resultado */
+.bar{display:flex;align-items:center;gap:12px;margin:6px 0 14px;flex-wrap:wrap}.bar h2{margin:0;font-size:17px;flex:1}
+.cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;align-items:start}
+.p{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.p .hd{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.av{width:42px;height:42px;border-radius:50%;background:var(--teal);color:#05201b;font-weight:800;display:grid;place-items:center;font-size:18px}
+.p .nm{font-weight:800;font-size:17px;flex:1}.p .ct{text-align:right;font-size:12px;color:var(--mut)}
+.p .ct b{display:block;font-size:22px;color:var(--led);line-height:1}
+.o{padding:12px 16px;border-top:1px solid var(--line);font-size:13px}.o:first-of-type{border-top:0}
+.o.pr{background:var(--alertbg);box-shadow:inset 4px 0 0 var(--alert)}
+.o .t{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.o .car{font-size:17px;font-weight:800}.o .os{color:var(--mut);font-size:12px;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;background:var(--alert);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;margin:4px 0}
+.why{font-size:12px;color:var(--alert);margin-bottom:4px}
+.o .meta{color:var(--mut);font-size:12px;margin-bottom:4px}
+.o ul{margin:0;padding-left:16px}.o li span{color:var(--mut)}
+.p .ft{padding:10px 16px;border-top:1px solid var(--line);background:var(--panel2)}
+.hide{display:none!important}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--teal);color:#05201b;font-weight:800;
+  padding:10px 18px;border-radius:99px;opacity:0;pointer-events:none;transition:.25s}.toast.on{opacity:1}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{.top .sign,.side,.btn,.ft,.toast,.stats{display:none}body{background:#fff;color:#000}.wrap{display:block;padding:0}
+  .p,.o{break-inside:avoid;background:#fff;color:#000;border-color:#999}.o.pr{background:#fee}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="sign">OS NOTURNO</div>
+  <div><h1>Divisor de fichas</h1><p>Distribui as O.S. entre a equipe e cobra o motivo do que ficou para trás</p></div>
+  <div class="sp"></div><div class="date" id="hoje"></div>
+</header>
+
+<div class="wrap">
+  <aside class="side">
+    <section class="box">
+      <h2><span class="n">1</span>Equipe da noite</h2>
+      <label for="nomes">Um nome por linha</label>
+      <textarea id="nomes" placeholder="João&#10;Maria&#10;Pedro&#10;Ana"></textarea>
+      <p class="hint">Os nomes ficam salvos para as próximas noites.</p>
+    </section>
+    <section class="box">
+      <h2><span class="n">2</span>Arquivo das fichas</h2>
+      <label class="drop" id="drop" for="arq"><b id="dropT">Escolher arquivo CSV</b><span id="dropS">ou arraste e solte aqui</span></label>
+      <input type="file" id="arq" accept=".csv,.txt">
+    </section>
+    <section class="box">
+      <h2><span class="n">3</span>Dividir</h2>
+      <button class="btn" id="btnDividir" disabled>Dividir fichas</button>
+      <div class="err" id="msg" role="alert"></div>
+    </section>
+  </aside>
+
+  <main>
+    <div class="empty" id="vazio"><div class="bus">🚌</div><h3>Nenhum arquivo carregado</h3>
+      <div>Digite a equipe e envie o CSV das fichas para começar.</div></div>
+
+    <div id="painel" class="hide">
+      <div class="stats">
+        <div class="stat led"><b id="sTot">0</b><span>fichas (O.S.)</span></div>
+        <div class="stat al"><b id="sRep">0</b><span>não feitas ontem (prioridade)</span></div>
+        <div class="stat"><b id="sPes">0</b><span>pessoas na equipe</span></div>
+      </div>
+      <section class="rev" id="rev">
+        <h2>O que ficou para trás</h2>
+        <p>Estas O.S. já foram entregues em noites anteriores e continuam abertas. Diga por que não foram feitas — elas saem na frente da divisão.</p>
+        <div id="reps"></div>
+      </section>
+      <section id="res" class="hide">
+        <div class="bar"><h2 id="resumo"></h2>
+          <button class="btn ghost" onclick="window.print()">Imprimir</button></div>
+        <div class="cols" id="cols"></div>
+      </section>
+    </div>
+  </main>
+</div>
+<div class="toast" id="toast">Lista copiada</div>
+
+<script>
+const MOTIVOS=["Sem peça em estoque","Carro não ficou na garagem / não recolheu","Sem tempo na noite","Aguardando aprovação / liberação","Defeito não localizado","Carro em manutenção em outro setor","Outro"];
+let LISTA=[],CARGA={};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=d=>d?d.split("-").reverse().join("/"):"";
+const erro=t=>$("msg").textContent=t||"";
+const nomes=()=>$("nomes").value.split("\n").map(s=>s.trim()).filter(Boolean);
+$("hoje").textContent=new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long"});
+fetch("/api/estado").then(r=>r.json()).then(e=>{$("nomes").value=(e.nomes||[]).join("\n");$("sPes").textContent=nomes().length});
+$("nomes").oninput=()=>$("sPes").textContent=nomes().length;
+
+const drop=$("drop");
+["dragover","dragenter"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("on")}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("on")}));
+drop.addEventListener("drop",e=>{if(e.dataTransfer.files[0])carregar(e.dataTransfer.files[0])});
+$("arq").onchange=e=>{if(e.target.files[0])carregar(e.target.files[0])};
+
+async function carregar(f){
+  erro();$("res").classList.add("hide");
+  const r=await fetch("/api/analisar",{method:"POST",body:await f.arrayBuffer()});
+  const d=await r.json();
+  if(d.erro||!d.os.length){$("btnDividir").disabled=true;return erro(d.erro||"Nenhuma O.S. encontrada no arquivo.")}
+  LISTA=d.os;const reps=LISTA.filter(o=>o.repetida);
+  drop.classList.add("ok");$("dropT").textContent=f.name;$("dropS").textContent=LISTA.length+" O.S. encontradas";
+  $("sTot").textContent=LISTA.length;$("sRep").textContent=reps.length;$("sPes").textContent=nomes().length;
+  $("reps").innerHTML=reps.length?reps.map(o=>`
+    <div class="rep" data-os="${esc(o.os)}">
+      <div class="h"><span class="car">Carro ${esc(o.veiculo)}</span><span class="m">O.S. ${esc(o.os)} · repetida ${o.vezes}x · última vez com ${esc(o.anterior.pessoa)} em ${fmt(o.anterior.data)}</span></div>
+      <div class="d">${o.itens.map(i=>esc(i.componente+": "+i.defeito)).join(" · ")}</div>
+      <div class="g"><div><label>Por que não foi feito?</label>
+        <select class="mot"><option value="">Selecione o motivo</option>${MOTIVOS.map(m=>`<option>${esc(m)}</option>`).join("")}</select></div>
+        <div><label>Observação (opcional)</label><input type="text" class="obs"></div></div>
+    </div>`).join(""):`<div class="clean">Nenhuma O.S. repetida. Tudo da noite anterior foi resolvido.</div>`;
+  $("rev").classList.remove("hide");$("vazio").classList.add("hide");$("painel").classList.remove("hide");
+  $("btnDividir").disabled=false;
+  $("btnDividir").textContent=`Dividir ${LISTA.length} fichas`;
+}
+
+$("btnDividir").onclick=async()=>{
+  erro();const nm=nomes();if(!nm.length)return erro("Informe os nomes da equipe.");
+  const motivos={};let falta=null;
+  document.querySelectorAll(".rep").forEach(el=>{
+    const m=el.querySelector(".mot").value;el.classList.toggle("miss",!m);if(!m&&!falta)falta=el;
+    motivos[el.dataset.os]={motivo:m,obs:el.querySelector(".obs").value};
+  });
+  if(falta){falta.scrollIntoView({behavior:"smooth",block:"center"});return erro("Selecione o motivo de todas as O.S. repetidas.")}
+  const r=await fetch("/api/dividir",{method:"POST",body:JSON.stringify({nomes:nm,os:LISTA,motivos})});
+  const d=await r.json();if(d.erro)return erro(d.erro);
+  CARGA=d.carga;mostrar(motivos);
+};
+
+function mostrar(motivos){
+  const ps=Object.keys(CARGA);$("sPes").textContent=ps.length;
+  $("resumo").textContent="Divisão pronta";
+  $("cols").innerHTML=ps.map((p,k)=>`
+    <article class="p"><div class="hd"><div class="av">${esc(p[0].toUpperCase())}</div><div class="nm">${esc(p)}</div>
+      <div class="ct"><b>${CARGA[p].length}</b>fichas</div></div>
+    ${CARGA[p].map(o=>{const m=motivos[o.os];return `
+      <div class="o ${o.repetida?"pr":""}">
+        <div class="t"><span class="car">Carro ${esc(o.veiculo)}</span><span class="os">O.S. ${esc(o.os)}</span></div>
+        ${o.repetida?`<span class="badge">PRIORIDADE · ${o.vezes}x repetida</span>${m&&m.motivo?`<div class="why">Motivo: ${esc(m.motivo)}${m.obs?" – "+esc(m.obs):""}</div>`:""}`:""}
+        <div class="meta">${esc(o.garagem||"sem garagem")} · ${esc(o.data)} · ${esc(o.origem)}</div>
+        <ul>${o.itens.map(i=>`<li>${esc(i.componente)}: ${esc(i.defeito)}${i.compl?` <span>(${esc(i.compl)})</span>`:""}</li>`).join("")}</ul>
+      </div>`}).join("")}
+    <div class="ft"><button class="btn ghost" data-p="${k}">Copiar lista</button></div></article>`).join("");
+  document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>copiar(ps[b.dataset.p]));
+  $("res").classList.remove("hide");$("res").scrollIntoView({behavior:"smooth"});
+}
+
+function copiar(p){
+  const t=`*${p}* – ${CARGA[p].length} fichas\n`+CARGA[p].map(o=>
+    `${o.repetida?"⚠️ PRIORIDADE ":""}Carro ${o.veiculo} (O.S. ${o.os}): `+o.itens.map(i=>i.componente+" - "+i.defeito).join("; ")).join("\n");
+  navigator.clipboard.writeText(t).then(()=>{const e=$("toast");e.classList.add("on");setTimeout(()=>e.classList.remove("on"),1600)});
+}
+</script>
+</body>
+</html>
